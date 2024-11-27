@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import MapView, { Marker, Polyline, PROVIDER_GOOGLE } from "react-native-maps";
 import {
   Button,
+  Image,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -15,7 +16,10 @@ import { ThemedView } from "./ThemedView";
 import { ThemedText } from "./ThemedText";
 import { getDistance } from "geolib";
 import { Ionicons } from "@expo/vector-icons";
-import { heightPercentageToDP, widthPercentageToDP } from "react-native-responsive-screen";
+import {
+  heightPercentageToDP,
+  widthPercentageToDP,
+} from "react-native-responsive-screen";
 
 export interface location {
   latitude: number;
@@ -44,10 +48,10 @@ const Map = () => {
         setRandomLocations(generateRandomPointsNearLocation(coords));
 
         const region = {
-          latitude:coords.latitude,
-          longitude:coords.longitude ,
-          latitudeDelta: 0.015,
-          longitudeDelta: 0.0121,
+          latitude: coords.latitude,
+          longitude: coords.longitude,
+          latitudeDelta: 0.0922,
+          longitudeDelta: 0.0421,
         };
         if (mapRef.current) {
           mapRef.current.animateToRegion(region, 1000);
@@ -60,7 +64,6 @@ const Map = () => {
     }
   };
 
-   
   //function to generate random locations near the user's postion
   const generateRandomPointsNearLocation = (
     location: location,
@@ -97,13 +100,31 @@ const Map = () => {
     ); /* Convert to kilometer */
   };
 
+  const zoomToMarker = (marker: location) => {
+    if (mapRef.current && marker) {
+      mapRef.current.animateToRegion({
+        latitude: marker.latitude,
+        longitude: marker.longitude,
+        latitudeDelta: 0.05,
+        longitudeDelta: 0.05,
+      });
+    }
+  };
+
   useEffect(() => {
-    getLocation()
+    getLocation();
   }, []);
+
+  const handleMapPress = (e: any) => {
+    const coordinate = e.nativeEvent.coordinate;
+    setDestination(coordinate);
+    setIsModalVisible(true);
+  };
 
   return (
     <View style={{ flex: 1 }}>
       <MapView
+        onPress={handleMapPress}
         loadingEnabled
         userInterfaceStyle={colorScheme == "dark" ? "dark" : "light"}
         moveOnMarkerPress
@@ -121,6 +142,17 @@ const Map = () => {
         showsTraffic
         showsIndoorLevelPicker
       >
+        {destination && (
+          <Marker
+            draggable
+            onDragEnd={(e) => setDestination(e.nativeEvent.coordinate)}
+            coordinate={destination}
+            title={"Destination"}
+            description={"Your destination location"}
+            pinColor={"purple"}
+            onPress={() => zoomToMarker(destination)}
+          />
+        )}
         {myLocation?.latitude && myLocation?.longitude && (
           <Marker
             pinColor="blue"
@@ -131,6 +163,7 @@ const Map = () => {
             title="My Location"
             description="I am here"
           />
+         
         )}
 
         {randomLocations?.map((marker, index) => (
@@ -155,20 +188,61 @@ const Map = () => {
       </MapView>
 
       {myLocation && destination && isModalVisible && (
-        <BottomModal snapPoints={["30%"]} setIsModalVisible={setIsModalVisible}>
+        <BottomModal snapPoints={["40%"]} setIsModalVisible={setIsModalVisible}>
           <ThemedView style={{ alignItems: "center" }}>
-            <ThemedText type="subtitle">Get To Your Destination</ThemedText>
+            <ThemedText type="subtitle">Start Trip</ThemedText>
 
-            <View style={{ marginTop: 30, flexDirection: "row" }}>
-              <Ionicons name="map-outline" size={22} color={"blue"} />
-              <ThemedText style={{ marginLeft: 4 }} type="defaultSemiBold">
-                Random location is {getDistanceFromSourceToDestination()}km
-                away.
-              </ThemedText>
+            <View
+              style={{
+                width: widthPercentageToDP(90),
+                flexDirection: "row",
+                alignItems: "center",
+                justifyContent: "space-between",
+              }}
+            >
+              <Ionicons
+                name="car-sport-outline"
+                size={widthPercentageToDP(25)}
+                color={"blue"}
+              />
+              <View>
+                <View
+                  style={{
+                    marginTop: heightPercentageToDP(4),
+                    flexDirection: "row",
+                  }}
+                >
+                  <Ionicons
+                    name="map-outline"
+                    size={widthPercentageToDP(5)}
+                    color={"blue"}
+                  />
+                  <ThemedText style={{ marginLeft: 4 }} type="defaultSemiBold">
+                    Random location is{" "}
+                    {getDistanceFromSourceToDestination().toFixed(2)}km away.
+                  </ThemedText>
+                </View>
+                <View
+                  style={{
+                    flexDirection: "row",
+                    alignItems: "center",
+                  }}
+                >
+                  <Ionicons
+                    name="time-outline"
+                    size={widthPercentageToDP(5)}
+                    color={"blue"}
+                  />
+                  <ThemedText style={{ marginLeft: 4 }} type="defaultSemiBold">
+                    Estimated arrival time: 40mins
+                  </ThemedText>
+                </View>
+              </View>
             </View>
-
             <TouchableOpacity style={styles.button}>
-             <ThemedText style={{textAlign:"center"}} type="subtitle">Start Journey</ThemedText>
+              <ThemedText style={{ textAlign: "center", color:"#fff" }} type="subtitle">
+                Start Journey
+              </ThemedText>
             </TouchableOpacity>
           </ThemedView>
         </BottomModal>
@@ -181,11 +255,11 @@ export default Map;
 
 const styles = StyleSheet.create({
   button: {
-    backgroundColor:"blue",
+    backgroundColor: "blue",
     marginTop: heightPercentageToDP(5),
     width: widthPercentageToDP(90),
     paddingVertical: heightPercentageToDP(1.5),
-   alignItems:"center",
+    alignItems: "center",
     alignSelf: "center",
   },
 });

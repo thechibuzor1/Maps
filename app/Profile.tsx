@@ -20,8 +20,7 @@ const Profile = () => {
   const colorScheme = useColorScheme();
   return (
     <ThemedView>
-      <ScrollView   
-       showsVerticalScrollIndicator={false}>
+      <ScrollView showsVerticalScrollIndicator={false}>
         <Image
           source={require("../assets/images/profile.png")}
           style={styles.profileImage}
@@ -89,7 +88,10 @@ const Profile = () => {
         />
 
         <TouchableOpacity style={styles.button}>
-          <ThemedText style={{ textAlign: "center" }} type="subtitle">
+          <ThemedText
+            style={{ textAlign: "center", color: "#fff" }}
+            type="subtitle"
+          >
             Save
           </ThemedText>
         </TouchableOpacity>
@@ -110,8 +112,9 @@ const styles = StyleSheet.create({
     alignSelf: "center",
   },
   profileImage: {
-    width: 100,
-    height: 100,
+    marginTop: heightPercentageToDP(2),
+    width: widthPercentageToDP(30),
+    height: widthPercentageToDP(30),
     alignSelf: "center",
     borderRadius: 9999,
   },
